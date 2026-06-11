@@ -20,7 +20,21 @@
       "Bash(git status *)",
       "Bash(pkill -f \"next dev\")",
       "Bash(lsof -i :3000 -sTCP:LISTEN -t)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000)",
+      "Bash(node screenshot.js)",
+      "Bash(curl -s http://localhost:3000/ -o /tmp/landing.html -w \"HTTP %{http_code}\\\\n\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s http://localhost:3000/templates -o /tmp/templates.html)",
+      "Bash(curl -sI http://localhost:3000/dashboard)",
+      "Bash(lsof -ti :3001 -sTCP:LISTEN)",
+      "Bash(xargs -r kill)",
+      "Bash(curl -s http://localhost:3000/templates -o /tmp/templates2.html -w \"%{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3000/templates)",
+      "Bash(curl -s \"http://localhost:3000/_next/static/chunks/%5Broot-of-the-server%5D__04kpziu._.css\")",
+      "Bash(sed -i '' 's/btn-gradient flex items-center gap-2 px-6 py-3 text-sm transition-all/btn-gradient flex items-center justify-center gap-2 text-sm transition-all/g' \"src/app/\\(dashboard\\)/trips/new/new-trip-form.tsx\")",
+      "Bash(sed -i '' 's/btn-gradient mt-6 inline-flex items-center gap-2 px-6 py-3 text-sm transition-all/btn-gradient mt-6 inline-flex items-center gap-2 text-sm transition-all/g' src/components/GeneratePackingList.tsx)",
+      "Bash(lsof -i :3000 -sTCP:LISTEN -n -P)",
+      "Bash(curl *)"
     ]
   }
 }

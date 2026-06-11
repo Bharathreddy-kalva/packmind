@@ -52,18 +52,18 @@ export function GeneratePackingList({
   if (error) {
     return (
       <div className="mx-auto max-w-2xl py-10">
-        <div className="animate-fade-in-up rounded-xl border border-slate-800 bg-slate-900 p-8 text-center">
+        <div className="glass animate-fade-in-up rounded-2xl p-8 text-center">
           <h1 className="text-2xl font-bold text-white">
             Couldn&apos;t generate your packing list
           </h1>
-          <p className="mt-2 text-sm text-slate-400">
+          <p className="mt-2 text-sm text-white/50">
             Something went wrong while talking to the AI. Try again below.
           </p>
           <button
             type="button"
             onClick={handleRetry}
             disabled={isRetrying}
-            className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            className="btn-gradient mt-6 inline-flex items-center gap-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isRetrying ? (
               <Loader2 className="size-4 animate-spin" />
@@ -79,7 +79,7 @@ export function GeneratePackingList({
 
   return (
     <div className="mx-auto max-w-2xl py-10">
-      <div className="animate-fade-in-up rounded-xl border border-slate-800 bg-slate-900 p-8 text-center">
+      <div className="animate-fade-in-up rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-8 text-center">
         <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-indigo-500/10 animate-pulse-glow">
           <Loader2 className="size-7 animate-spin text-indigo-400" />
         </div>
@@ -87,10 +87,10 @@ export function GeneratePackingList({
           Generating your packing list...
         </h1>
         <p className="mt-2 text-lg font-medium text-white">{destination}</p>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-white/40">
           {departureDate} – {returnDate}
         </p>
-        <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-indigo-500/40 px-4 py-1.5 text-sm font-medium text-indigo-300">
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-indigo-500/10 px-4 py-1.5 text-sm font-medium text-indigo-400">
           <Sparkles className="size-4" />
           Claude is packing your bags...
         </div>

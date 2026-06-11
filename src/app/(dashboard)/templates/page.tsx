@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { tripGradient, TRIP_TYPE_ICONS } from "@/lib/trip-style";
+import { tripAccent, TRIP_TYPE_ICONS } from "@/lib/trip-style";
 
 const TEMPLATES: {
   name: string;
@@ -71,10 +70,10 @@ export default function TemplatesPage() {
   return (
     <div className="animate-fade-in-up space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Trip <span className="text-gradient">Templates</span>
+        <h1 className="text-3xl font-bold tracking-tight text-white">
+          Trip <span className="text-indigo-400">Templates</span>
         </h1>
-        <p className="mt-2 text-slate-400">
+        <p className="mt-2 text-white/40">
           Start from a pre-built packing list and customize it for your trip.
         </p>
       </div>
@@ -82,7 +81,7 @@ export default function TemplatesPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {TEMPLATES.map((template, index) => {
           const Icon = TRIP_TYPE_ICONS[template.tripType];
-          const gradient = tripGradient(template.tripType);
+          const accent = tripAccent(template.tripType);
           const params = new URLSearchParams({
             type: template.tripType,
             activities: template.activities.join(","),
@@ -92,22 +91,21 @@ export default function TemplatesPage() {
             <div
               key={template.name}
               style={{ animationDelay: `${index * 50}ms` }}
-              className="card-glow animate-fade-in-up flex flex-col overflow-hidden rounded-xl border border-slate-800 bg-slate-900 transition-transform duration-300 hover:-translate-y-0.5"
+              className="glass animate-fade-in-up flex flex-col overflow-hidden rounded-2xl transition-all duration-300 hover:border-white/[0.12] hover:shadow-[0_0_30px_rgba(180,40,120,0.2)]"
             >
-              <div
-                className={cn(
-                  "flex h-20 items-center justify-center bg-gradient-to-br",
-                  gradient
-                )}
-              >
-                <Icon className="size-8 text-white" />
+              <div className="flex h-20 items-center justify-center border-b border-white/5">
+                <div
+                  className={`flex size-11 items-center justify-center rounded-xl ${accent.iconBg} ${accent.iconText}`}
+                >
+                  <Icon className="size-6" />
+                </div>
               </div>
 
               <div className="flex flex-1 flex-col p-5">
                 <h3 className="text-lg font-bold text-white">
                   {template.name}
                 </h3>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-1 text-sm text-white/40">
                   {template.itemCount} items
                 </p>
 
@@ -115,7 +113,7 @@ export default function TemplatesPage() {
                   {template.categories.map((category) => (
                     <span
                       key={category}
-                      className="rounded-full border border-slate-700 px-3 py-1 text-xs font-medium text-slate-300"
+                      className="rounded-full bg-white/5 px-3 py-1 text-xs font-medium text-white/60"
                     >
                       {category}
                     </span>
@@ -124,7 +122,7 @@ export default function TemplatesPage() {
 
                 <Link
                   href={`/trips/new?${params.toString()}`}
-                  className="mt-5 flex items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                  className="btn-gradient mt-5 flex items-center justify-center text-sm transition-all"
                 >
                   Use Template
                 </Link>

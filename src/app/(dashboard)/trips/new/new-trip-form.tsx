@@ -72,7 +72,7 @@ const REMINDER_OPTIONS = [
 ] as const;
 
 const inputClass =
-  "mt-2 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none";
+  "mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-white placeholder:text-white/30 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 [color-scheme:dark]";
 
 function NewTripForm() {
   const router = useRouter();
@@ -157,34 +157,40 @@ function NewTripForm() {
   return (
     <div className="flex flex-col justify-center">
       <div className="mb-8">
-        <div className="flex items-center justify-between text-sm font-medium text-slate-400">
-          <span>
-            Step {step + 1} of {STEPS.length}
-          </span>
-          <span>{STEPS[step]}</span>
+        <div className="flex items-center justify-center gap-2">
+          {STEPS.map((label, index) => (
+            <div
+              key={label}
+              className={cn(
+                "h-2 rounded-full transition-all duration-300",
+                index === step
+                  ? "w-8 bg-indigo-500"
+                  : index < step
+                    ? "w-2 bg-indigo-500"
+                    : "w-2 bg-white/20"
+              )}
+            />
+          ))}
         </div>
-        <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-          <div
-            className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-300"
-            style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-          />
-        </div>
+        <p className="mt-3 text-center text-sm font-medium text-white/40">
+          Step {step + 1} of {STEPS.length} &bull; {STEPS[step]}
+        </p>
       </div>
 
-      <div className="rounded-xl border border-slate-800 bg-slate-900 p-8">
+      <div className="glass rounded-2xl p-8">
         {step === 0 && (
           <div className="space-y-6">
             <div>
               <h2 className="text-xl font-bold text-white">
                 Where are you headed?
               </h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-white/50">
                 Tell us about your trip.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300">
+              <label className="block text-sm font-medium text-white/70">
                 Destination
               </label>
               <input
@@ -198,18 +204,18 @@ function NewTripForm() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium text-slate-300">
+                <label className="block text-sm font-medium text-white/70">
                   Departure date
                 </label>
                 <input
                   type="date"
                   value={departureDate}
                   onChange={(e) => setDepartureDate(e.target.value)}
-                  className={cn(inputClass, "[color-scheme:dark]")}
+                  className={inputClass}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300">
+                <label className="block text-sm font-medium text-white/70">
                   Return date
                 </label>
                 <input
@@ -217,7 +223,7 @@ function NewTripForm() {
                   value={returnDate}
                   min={departureDate || undefined}
                   onChange={(e) => setReturnDate(e.target.value)}
-                  className={cn(inputClass, "[color-scheme:dark]")}
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -230,7 +236,7 @@ function NewTripForm() {
               <h2 className="text-xl font-bold text-white">
                 What kind of trip is this?
               </h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-white/50">
                 Pick the option that fits best.
               </p>
             </div>
@@ -244,8 +250,8 @@ function NewTripForm() {
                   className={cn(
                     "flex flex-col items-center gap-2 rounded-xl border p-4 transition-colors",
                     tripType === value
-                      ? "border-indigo-500 bg-indigo-500/10 text-white"
-                      : "border-slate-700 bg-slate-950 text-slate-400 hover:border-slate-600 hover:text-white"
+                      ? "border-indigo-500 bg-indigo-500/10 text-indigo-400"
+                      : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white"
                   )}
                 >
                   <Icon className="size-6" />
@@ -262,7 +268,7 @@ function NewTripForm() {
               <h2 className="text-xl font-bold text-white">
                 What will you be doing?
               </h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-white/50">
                 Select all that apply.
               </p>
             </div>
@@ -276,8 +282,8 @@ function NewTripForm() {
                   className={cn(
                     "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
                     activities.includes(activity)
-                      ? "border-indigo-500 bg-indigo-500/10 text-white"
-                      : "border-slate-700 bg-slate-950 text-slate-400 hover:border-slate-600 hover:text-white"
+                      ? "border-indigo-500 bg-indigo-500/20 text-indigo-400"
+                      : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white"
                   )}
                 >
                   {activity}
@@ -291,13 +297,13 @@ function NewTripForm() {
           <div className="space-y-8">
             <div>
               <h2 className="text-xl font-bold text-white">Almost done</h2>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-1 text-sm text-white/50">
                 Set up reminders and tell us your packing style.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-300">
+              <label className="block text-sm font-medium text-white/70">
                 Phone number
               </label>
               <input
@@ -307,20 +313,20 @@ function NewTripForm() {
                 placeholder="+1 (555) 000-0000"
                 className={inputClass}
               />
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-2 text-xs text-white/30">
                 We&apos;ll use this for SMS packing reminders.
               </p>
             </div>
 
             <div>
-              <span className="block text-sm font-medium text-slate-300">
+              <span className="block text-sm font-medium text-white/70">
                 Remind me
               </span>
               <div className="mt-2 space-y-2">
                 {REMINDER_OPTIONS.map(({ key, label }) => (
                   <label
                     key={key}
-                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-700 bg-slate-950 px-4 py-3"
+                    className="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3"
                   >
                     <input
                       type="checkbox"
@@ -331,16 +337,16 @@ function NewTripForm() {
                           [key]: e.target.checked,
                         }))
                       }
-                      className="size-4 rounded border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500"
+                      className="size-4 rounded border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0"
                     />
-                    <span className="text-sm text-white">{label}</span>
+                    <span className="text-sm text-white/70">{label}</span>
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <span className="block text-sm font-medium text-slate-300">
+              <span className="block text-sm font-medium text-white/70">
                 Travel style
               </span>
               <div className="mt-2 space-y-2">
@@ -351,7 +357,7 @@ function NewTripForm() {
                       "flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition-colors",
                       travelStyle === value
                         ? "border-indigo-500 bg-indigo-500/10"
-                        : "border-slate-700 bg-slate-950 hover:border-slate-600"
+                        : "border-white/10 bg-white/5 hover:border-white/20"
                     )}
                   >
                     <input
@@ -360,13 +366,13 @@ function NewTripForm() {
                       value={value}
                       checked={travelStyle === value}
                       onChange={() => setTravelStyle(value)}
-                      className="mt-1 size-4 border-slate-600 bg-slate-900 text-indigo-500 focus:ring-indigo-500"
+                      className="mt-1 size-4 border-white/20 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0"
                     />
                     <span>
                       <span className="block text-sm font-medium text-white">
                         {label}
                       </span>
-                      <span className="block text-xs text-slate-400">
+                      <span className="block text-xs text-white/40">
                         {description}
                       </span>
                     </span>
@@ -384,7 +390,7 @@ function NewTripForm() {
           onClick={() => setStep((s) => s - 1)}
           disabled={step === 0 || isSubmitting}
           className={cn(
-            "flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-slate-300 transition-colors hover:bg-slate-800 hover:text-white",
+            "flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white/50 transition-colors hover:text-white",
             step === 0 && "pointer-events-none opacity-0"
           )}
         >
@@ -397,7 +403,7 @@ function NewTripForm() {
             type="button"
             onClick={() => setStep((s) => s + 1)}
             disabled={!canGoNext()}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-gradient flex items-center justify-center gap-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40"
           >
             Next
             <ArrowRight className="size-4" />
@@ -407,7 +413,7 @@ function NewTripForm() {
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 px-6 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-gradient flex items-center justify-center gap-2 text-sm transition-all disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isSubmitting ? (
               <Loader2 className="size-4 animate-spin" />

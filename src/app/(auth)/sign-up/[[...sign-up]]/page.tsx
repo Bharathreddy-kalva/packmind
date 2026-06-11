@@ -1,6 +1,7 @@
 import { SignUp } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { AtmosphericBackground } from "@/components/atmospheric-background";
 
 export default async function SignUpPage() {
   const { userId } = await auth();
@@ -10,7 +11,8 @@ export default async function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="flex min-h-screen flex-1 items-center justify-center p-4 text-white">
+      <AtmosphericBackground />
       <SignUp />
     </div>
   );

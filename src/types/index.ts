@@ -29,6 +29,106 @@ export interface DestinationIntel {
   localTips: string[];
 }
 
+export interface ResourceWarning {
+  type: "gas" | "food" | "medical" | "connectivity" | "water" | "atm" | string;
+  severity: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  action: string;
+}
+
+export interface GasStationResource {
+  name: string;
+  distance: string;
+  address: string;
+  notes: string;
+}
+
+export interface RestaurantResource {
+  name: string;
+  distance: string;
+  cuisine: string;
+  hours: string;
+  notes: string;
+}
+
+export interface GroceryStoreResource {
+  name: string;
+  distance: string;
+  hours: string;
+  notes: string;
+}
+
+export interface HospitalResource {
+  name: string;
+  distance: string;
+  phone: string;
+  emergency: boolean;
+}
+
+export interface AttractionResource {
+  name: string;
+  type: string;
+  duration: string;
+  difficulty: string;
+  notes: string;
+}
+
+export interface NearbyResources {
+  gasStations: GasStationResource[];
+  restaurants: RestaurantResource[];
+  groceryStores: GroceryStoreResource[];
+  hospitals: HospitalResource[];
+  attractions: AttractionResource[];
+}
+
+export interface ScheduleItem {
+  time: string;
+  activity: string;
+  duration: string;
+  notes: string;
+  type:
+    | "travel"
+    | "essential"
+    | "arrival"
+    | "activity"
+    | "food"
+    | "leisure"
+    | string;
+}
+
+export interface DayPlan {
+  day: number;
+  date: string;
+  theme: string;
+  weather: string;
+  schedule: ScheduleItem[];
+  warnings: string[];
+  essentialItems: string[];
+}
+
+export interface EmergencyInfo {
+  nearestHospital: string;
+  emergencyNumber: string;
+  rangerStation: string;
+  evacuationRoutes: string;
+}
+
+export interface AutoAddItem {
+  name: string;
+  category: string;
+  reason: string;
+}
+
+export interface TripIntelligence {
+  resourceWarnings: ResourceWarning[];
+  nearbyResources: NearbyResources;
+  dayByDayPlan: DayPlan[];
+  emergencyInfo: EmergencyInfo;
+  mustKnow: string[];
+  autoAddItems: AutoAddItem[];
+}
+
 export interface Trip {
   id: string;
   user_id: string;
@@ -39,7 +139,9 @@ export interface Trip {
   activities: string[];
   weather_data: WeatherDataPoint[] | null;
   destination_intel: DestinationIntel | null;
+  trip_intelligence: TripIntelligence | null;
   status: string;
+  itinerary_approved: boolean;
   created_at: string;
 }
 

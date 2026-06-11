@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { subDays } from "date-fns";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { scheduleTripReminders, sendTripCreatedSms } from "@/lib/reminders";
 
 interface CreateTripBody {
   destination: string;
@@ -11,11 +11,6 @@ interface CreateTripBody {
   activities: string[];
   phone_number: string;
   travel_style: string;
-  reminders: {
-    threeDaysBefore: boolean;
-    oneDayBefore: boolean;
-    morningOf: boolean;
-  };
 }
 
 export async function POST(request: Request) {
@@ -34,7 +29,6 @@ export async function POST(request: Request) {
     activities,
     phone_number,
     travel_style,
-    reminders,
   } = body;
 
   if (!destination || !departure_date || !return_date) {
@@ -80,34 +74,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const departure = new Date(departure_date);
-  const reminderRows = [
-    reminders?.threeDaysBefore && {
-      trip_id: trip.id,
-      user_id: userId,
-      remind_at: subDays(departure, 3).toISOString(),
-      message: `Your trip to ${destination} is in 3 days — time to start packing!`,
-    },
-    reminders?.oneDayBefore && {
-      trip_id: trip.id,
-      user_id: userId,
-      remind_at: subDays(departure, 1).toISOString(),
-      message: `Your trip to ${destination} is tomorrow — finish packing!`,
-    },
-    reminders?.morningOf && {
-      trip_id: trip.id,
-      user_id: userId,
-      remind_at: departure.toISOString(),
-      message: `Today's the day! Double-check your packing list for ${destination}.`,
-    },
-  ].filter(Boolean);
+  await scheduleTripReminders(supabase, trip.id, userId, departure_date);
 
-  if (reminderRows.length > 0) {
-    const { error: reminderError } = await supabase
-      .from("reminders")
-      .insert(reminderRows);
-
-    console.log("[api/trips] reminders insert error:", reminderError);
+  try {
+    await sendTripCreatedSms(
+      supabase,
+      userId,
+      destination,
+      departure_date,
+      return_date
+    );
+  } catch (err) {
+    console.error("[api/trips] Failed to send trip-created SMS:", err);
   }
 
   return NextResponse.json({ id: trip.id }, { status: 201 });

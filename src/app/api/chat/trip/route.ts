@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { format, subDays } from "date-fns";
+import { format } from "date-fns";
 import Groq from "groq-sdk";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { scheduleTripReminders, sendTripCreatedSms } from "@/lib/reminders";
 
 export const maxDuration = 60;
 
@@ -222,28 +223,18 @@ export async function POST(request: Request) {
     );
   }
 
-  const departure = new Date(departure_date);
-  const reminderRows = [
-    {
-      trip_id: trip.id,
-      user_id: userId,
-      remind_at: subDays(departure, 3).toISOString(),
-      message: `Your trip to ${destination} is in 3 days — time to start packing!`,
-    },
-    {
-      trip_id: trip.id,
-      user_id: userId,
-      remind_at: subDays(departure, 1).toISOString(),
-      message: `Your trip to ${destination} is tomorrow — finish packing!`,
-    },
-  ];
+  await scheduleTripReminders(supabase, trip.id, userId, departure_date);
 
-  const { error: reminderError } = await supabase
-    .from("reminders")
-    .insert(reminderRows);
-
-  if (reminderError) {
-    console.error("[chat/trip] reminders insert error:", reminderError);
+  try {
+    await sendTripCreatedSms(
+      supabase,
+      userId,
+      destination,
+      departure_date,
+      return_date
+    );
+  } catch (err) {
+    console.error("[chat/trip] Failed to send trip-created SMS:", err);
   }
 
   return NextResponse.json({

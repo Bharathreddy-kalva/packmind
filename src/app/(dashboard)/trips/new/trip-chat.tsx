@@ -24,11 +24,11 @@ function Avatar() {
 
 function TypingIndicator() {
   return (
-    <div className="flex w-fit items-center gap-1.5 rounded-2xl rounded-bl-sm bg-slate-800 px-4 py-3.5">
+    <div className="flex w-fit items-center gap-1.5 rounded-xl rounded-bl-sm border border-white/[0.08] bg-white/[0.06] px-4 py-3.5">
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className="size-1.5 animate-bounce rounded-full bg-slate-400"
+          className="size-1.5 animate-bounce rounded-full bg-white/40"
           style={{ animationDelay: `${i * 150}ms` }}
         />
       ))}
@@ -116,7 +116,7 @@ export function TripChat() {
   };
 
   return (
-    <div className="flex h-[65vh] min-h-[28rem] flex-col rounded-2xl border border-slate-800 bg-slate-950">
+    <div className="flex h-[65vh] min-h-[28rem] flex-col rounded-[20px] border border-white/[0.06] bg-white/[0.03] backdrop-blur-[20px]">
       <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
         {messages.map((message, index) => (
           <div
@@ -129,10 +129,10 @@ export function TripChat() {
             {message.role === "assistant" && <Avatar />}
             <div
               className={cn(
-                "max-w-[80%] whitespace-pre-wrap rounded-2xl px-4 py-3 text-sm leading-relaxed",
+                "max-w-[80%] whitespace-pre-wrap rounded-xl px-4 py-3 text-sm leading-relaxed",
                 message.role === "user"
-                  ? "rounded-br-sm bg-indigo-500 text-white"
-                  : "rounded-bl-sm bg-slate-800 text-slate-100"
+                  ? "rounded-br-sm bg-indigo-600/80 backdrop-blur-sm text-white"
+                  : "rounded-bl-sm border border-white/[0.08] bg-white/[0.06] text-white/80"
               )}
             >
               {message.content}
@@ -148,10 +148,10 @@ export function TripChat() {
         )}
 
         {tripCreated && (
-          <div className="animate-fade-in-up flex flex-col items-center gap-2 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-6 text-center">
+          <div className="animate-fade-in-up flex flex-col items-center gap-2 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-6 text-center">
             <CheckCircle2 className="size-10 text-emerald-400" />
             <p className="font-semibold text-white">Trip created!</p>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-white/50">
               Taking you to your packing list...
             </p>
           </div>
@@ -165,7 +165,7 @@ export function TripChat() {
           e.preventDefault();
           sendMessage();
         }}
-        className="flex items-center gap-3 border-t border-slate-800 p-4"
+        className="flex items-center gap-3 rounded-b-[20px] border-t border-white/10 bg-white/5 p-4 backdrop-blur-md"
       >
         <input
           type="text"
@@ -174,12 +174,12 @@ export function TripChat() {
           placeholder="Type your message..."
           disabled={isLoading || tripCreated}
           autoFocus
-          className="flex-1 rounded-xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:border-indigo-500 focus:outline-none disabled:opacity-50"
+          className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.05] px-4 py-3 text-sm text-white placeholder:text-white/30 outline-none focus:border-white/[0.15] disabled:opacity-50"
         />
         <button
           type="submit"
           disabled={isLoading || tripCreated || !input.trim()}
-          className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex size-12 shrink-0 items-center justify-center rounded-full border-none bg-[linear-gradient(135deg,#f97316,#e11d73)] text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {isLoading ? (
             <Loader2 className="size-5 animate-spin" />

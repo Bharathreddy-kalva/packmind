@@ -19,17 +19,17 @@ export default function NewTripPage() {
   return (
     <div className="animate-fade-in-up mx-auto flex max-w-2xl flex-col py-6">
       <div className="mb-6 flex justify-center">
-        <div className="inline-flex items-center gap-1 rounded-full border border-slate-800 bg-slate-900 p-1">
+        <div className="glass inline-flex items-center gap-1 rounded-full p-1">
           {MODES.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
               type="button"
               onClick={() => setMode(key)}
               className={cn(
-                "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all",
                 mode === key
-                  ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white"
-                  : "text-slate-400 hover:text-white"
+                  ? "btn-gradient"
+                  : "text-white/50 hover:text-white"
               )}
             >
               <Icon className="size-4" />
