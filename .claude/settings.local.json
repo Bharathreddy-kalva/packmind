@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('exports',{}\\), indent=2\\)\\)\")",
+      "Bash(npx tsc *)",
+      "Bash(npx eslint *)",
+      "Bash(npm run *)",
+      "Bash(open *)",
+      "Bash(grep -iE \"^\\(luggage|arrow-right|chevron-right|brain|cloud|message-square|package-open|layout-template|share-2\\)\\\\.js$\")",
+      "Skill(run)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(node -e \"const i=require\\('/Users/kalvabharathreddy/Desktop/packmind/node_modules/lucide-react'\\); const names=Object.keys\\(i\\); const want=['Waves','Briefcase','Mountain','Building2','Tent','Snowflake','Heart','Backpack','Utensils','Music','Landmark','ShoppingBag','Fish','Camera','Dumbbell','Sparkles','Zap','Phone','Bell','Plane','MapPin','Calendar','Loader2','Check','ChevronLeft','ChevronRight','Compass','PartyPopper','Palmtree','Umbrella']; want.forEach\\(w=>console.log\\(w, names.includes\\(w\\)\\)\\);\")",
+      "Bash(node -e \"console.log\\(Object.keys\\(require\\('@clerk/nextjs/server'\\)\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); console.log\\(fs.readdirSync\\('node_modules/@clerk/nextjs/dist'\\)\\)\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/dashboard)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/trips/new)",
+      "Bash(node -e \"const i=require\\('/Users/kalvabharathreddy/Desktop/packmind/node_modules/lucide-react'\\); const names=Object.keys\\(i\\); ['Shirt','Sparkles','Laptop','FileText','Heart','Package','Loader2','ChevronDown','ChevronUp','Share2','Plus','Cloud','Sun','CloudRain','Snowflake','Wind'].forEach\\(w=>console.log\\(w, names.includes\\(w\\)\\)\\);\")",
+      "Skill(claude-api)",
+      "Bash(npm install *)",
+      "Bash(git status *)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(lsof -i :3000 -sTCP:LISTEN -t)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000)"
+    ]
+  }
+}
