@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { tripAccent, TRIP_TYPE_ICONS } from "@/lib/trip-style";
+import { tripImageFor } from "@/lib/trip-images";
 import { WeatherIcon } from "@/components/weather-icon";
 import { TripIntelligence } from "@/components/TripIntelligence";
 import { TripRiskRadar } from "@/components/TripRiskRadar";
@@ -140,6 +141,7 @@ export function PackingListClient({
   const weather = trip.weather_data?.[0];
   const accent = tripAccent(trip.trip_type);
   const HeroIcon = TRIP_TYPE_ICONS[trip.trip_type] ?? MapPin;
+  const heroImage = tripImageFor(trip);
 
   const toggleCategory = (key: string) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -242,12 +244,30 @@ export function PackingListClient({
   return (
     <div className="animate-fade-in-up mx-auto max-w-5xl space-y-6 pb-24 pt-8">
       {/* Header */}
-      <div className="command-panel p-6 sm:p-8">
+      <div className="command-panel min-h-[420px] p-6 sm:p-8">
+        <div
+          aria-hidden
+          className="animate-ken-burns absolute inset-0 opacity-75"
+          style={{
+            backgroundImage: `url(${heroImage.src})`,
+            backgroundPosition: heroImage.focal,
+            backgroundSize: "cover",
+            transformOrigin: "center center",
+          }}
+        />
+        <div
+          aria-hidden
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(5,8,12,0.95), rgba(5,8,12,0.6) 48%, rgba(5,8,12,0.18)), linear-gradient(180deg, rgba(5,8,12,0.05), rgba(5,8,12,0.92))",
+          }}
+        />
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.18em]",
+                "inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-black/35 px-3 py-1 text-xs font-black uppercase tracking-[0.18em] backdrop-blur-md",
                 accent.bg,
                 accent.text
               )}
@@ -258,7 +278,7 @@ export function PackingListClient({
             <h1 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl">
               {trip.destination}
             </h1>
-            <div className="mt-3 flex items-center gap-2 text-sm font-bold text-white/46">
+            <div className="mt-3 flex items-center gap-2 text-sm font-bold text-white/65">
               <Calendar className="size-4" />
               {trip.departure_date} – {trip.return_date}
             </div>
@@ -313,6 +333,29 @@ export function PackingListClient({
             />
           </div>
         </div>
+
+        {heroImage.credit && (
+          <p className="mt-4 text-[11px] text-white/25">
+            Photo by{" "}
+            <a
+              href={`${heroImage.credit.link}?utm_source=packmind&utm_medium=referral`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white/40"
+            >
+              {heroImage.credit.name}
+            </a>{" "}
+            on{" "}
+            <a
+              href="https://unsplash.com/?utm_source=packmind&utm_medium=referral"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline hover:text-white/40"
+            >
+              Unsplash
+            </a>
+          </p>
+        )}
       </div>
 
       {/* Trip Intelligence */}

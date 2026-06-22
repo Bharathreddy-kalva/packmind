@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { scheduleTripReminders, sendTripCreatedSms } from "@/lib/reminders";
+import { getDestinationImage } from "@/lib/unsplash";
 
 interface CreateTripBody {
   destination: string;
@@ -86,6 +87,18 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     console.error("[api/trips] Failed to send trip-created SMS:", err);
+  }
+
+  try {
+    const image = await getDestinationImage(destination);
+    if (image) {
+      await supabase
+        .from("trips")
+        .update({ image_url: image.url, image_credit: image.credit })
+        .eq("id", trip.id);
+    }
+  } catch (err) {
+    console.error("[api/trips] Failed to fetch destination image:", err);
   }
 
   return NextResponse.json({ id: trip.id }, { status: 201 });

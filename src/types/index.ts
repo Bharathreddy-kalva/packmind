@@ -171,6 +171,11 @@ export interface TripRiskRadar {
   packingImpacts: PackingImpact[];
 }
 
+export interface ImageCredit {
+  name: string;
+  link: string;
+}
+
 export interface Trip {
   id: string;
   user_id: string;
@@ -184,6 +189,8 @@ export interface Trip {
   trip_intelligence: TripIntelligence | null;
   risk_radar: TripRiskRadar | null;
   risk_radar_refreshed_at: string | null;
+  image_url: string | null;
+  image_credit: ImageCredit | null;
   status: string;
   itinerary_approved: boolean;
   created_at: string;

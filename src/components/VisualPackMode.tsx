@@ -147,6 +147,7 @@ function Zone({
   items,
   onDropItem,
   onTogglePacked,
+  accentGradient,
 }: {
   title: string;
   icon: LucideIcon;
@@ -154,6 +155,7 @@ function Zone({
   items: PackingItem[];
   onDropItem: (itemId: string, zone: BagZone) => void;
   onTogglePacked: (item: PackingItem) => void;
+  accentGradient?: string;
 }) {
   const [isOver, setIsOver] = useState(false);
   const weight = estimateWeight(items);
@@ -173,43 +175,52 @@ function Zone({
         if (itemId) onDropItem(itemId, zone);
       }}
       className={cn(
-        "min-h-72 rounded-[10px] border border-white/10 bg-black/18 p-4 transition-colors",
+        "relative min-h-72 overflow-hidden rounded-[10px] border border-white/10 bg-black/18 p-4 transition-colors",
         isOver && "border-teal-300/60 bg-teal-300/10"
       )}
     >
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-white/8">
-            <Icon className="size-4 text-white/70" />
-          </div>
-          <div>
-            <p className="font-semibold text-white">{title}</p>
-            <p className="text-xs text-white/35">{items.length} items</p>
-          </div>
-        </div>
-        <p className="text-xs font-medium text-white/45">
-          {weight.toFixed(1)} kg
-        </p>
-      </div>
-
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+      {accentGradient && (
         <div
-          className="signal-line h-full rounded-full"
-          style={{ width: `${space}%` }}
+          aria-hidden
+          className="absolute inset-0 opacity-[0.07]"
+          style={{ background: accentGradient }}
         />
-      </div>
-      <p className="mt-1 text-[11px] text-white/30">{space}% space estimate</p>
-
-      <div className="mt-4 grid grid-cols-1 gap-2">
-        {items.length > 0 ? (
-          items.map((item) => (
-            <PackItem key={item.id} item={item} onTogglePacked={onTogglePacked} />
-          ))
-        ) : (
-          <div className="rounded-lg border border-dashed border-white/12 p-6 text-center text-xs text-white/30">
-            Drag items here
+      )}
+      <div className="relative">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 items-center justify-center rounded-lg bg-white/8">
+              <Icon className="size-4 text-white/70" />
+            </div>
+            <div>
+              <p className="font-semibold text-white">{title}</p>
+              <p className="text-xs text-white/35">{items.length} items</p>
+            </div>
           </div>
-        )}
+          <p className="text-xs font-medium text-white/45">
+            {weight.toFixed(1)} kg
+          </p>
+        </div>
+
+        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div
+            className="signal-line h-full rounded-full"
+            style={{ width: `${space}%` }}
+          />
+        </div>
+        <p className="mt-1 text-[11px] text-white/30">{space}% space estimate</p>
+
+        <div className="mt-4 grid grid-cols-1 gap-2">
+          {items.length > 0 ? (
+            items.map((item) => (
+              <PackItem key={item.id} item={item} onTogglePacked={onTogglePacked} />
+            ))
+          ) : (
+            <div className="rounded-lg border border-dashed border-white/12 p-6 text-center text-xs text-white/30">
+              Drag items here
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -256,6 +267,14 @@ export function VisualPackMode({
   return (
     <div className="space-y-5">
       <div className="command-panel p-5">
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-30"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(45,212,191,0.15), rgba(99,102,241,0.08) 50%, rgba(139,92,246,0.12))",
+          }}
+        />
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
@@ -302,6 +321,7 @@ export function VisualPackMode({
           items={carryOnItems}
           onDropItem={moveItem}
           onTogglePacked={onTogglePacked}
+          accentGradient="linear-gradient(135deg, rgba(45,212,191,0.3), transparent 60%)"
         />
         <Zone
           title="Checked bag"
@@ -310,6 +330,7 @@ export function VisualPackMode({
           items={checkedItems}
           onDropItem={moveItem}
           onTogglePacked={onTogglePacked}
+          accentGradient="linear-gradient(135deg, rgba(139,92,246,0.2), transparent 60%)"
         />
       </div>
 

@@ -14,46 +14,38 @@ import {
   Route,
 } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { tripImageFor } from "@/lib/trip-images";
 import { WeatherIcon } from "@/components/weather-icon";
 import { DevTriggerReminders } from "@/components/DevTriggerReminders";
 import type { Trip } from "@/types";
 
-function EmptyIllustration() {
-  return (
-    <svg
-      width="96"
-      height="96"
-      viewBox="0 0 120 120"
-      fill="none"
-      aria-hidden
-      className="shrink-0"
-    >
-      <circle cx="60" cy="60" r="60" fill="#ffffff" fillOpacity="0.05" />
-      <rect x="33" y="46" width="54" height="40" rx="6" fill="#ffffff" fillOpacity="0.08" />
-      <rect x="33" y="46" width="54" height="12" rx="6" fill="#6366f1" fillOpacity="0.4" />
-      <rect x="50" y="38" width="20" height="10" rx="3" fill="#ffffff" fillOpacity="0.1" />
-      <circle cx="60" cy="70" r="9" fill="#1a1a1a" />
-      <path
-        d="M56 70l3 3 6-6"
-        stroke="#818cf8"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function EmptyTripsState({ message }: { message: string }) {
   return (
-    <div className="command-panel flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
-      <EmptyIllustration />
-      <p className="font-semibold text-white/45">{message}</p>
+    <div className="command-panel flex min-h-80 flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+      <div
+        aria-hidden
+        className="animate-aurora absolute inset-0 bg-gradient-to-br from-teal-900/40 via-emerald-800/25 to-cyan-900/35"
+      />
+      <div aria-hidden className="absolute inset-0 overflow-hidden">
+        <div className="animate-float absolute left-[15%] top-[18%] h-20 w-32 rounded-xl border border-white/10 bg-white/[0.04] backdrop-blur-sm" />
+        <div className="animate-float-alt absolute right-[18%] top-[28%] h-16 w-28 rounded-xl border border-teal-300/10 bg-teal-300/[0.03] backdrop-blur-sm" />
+        <div className="animate-float absolute bottom-[22%] left-[28%] h-14 w-24 rounded-xl border border-emerald-300/10 bg-emerald-300/[0.03] backdrop-blur-sm" style={{ animationDelay: "2s" }} />
+      </div>
+      <div className="relative flex size-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm">
+        <Plane className="size-7 text-teal-200/80" />
+      </div>
+      <div className="relative">
+        <p className="text-lg font-bold text-white/60">{message}</p>
+        <p className="mt-1 text-sm text-white/30">
+          Your next adventure starts here
+        </p>
+      </div>
       <Link
         href="/trips/new"
-        className="mt-1 text-sm font-bold text-teal-200 transition-colors hover:text-teal-100"
+        className="btn-gradient relative mt-2 flex items-center gap-2 text-sm transition-all"
       >
-        Plan a trip &rarr;
+        <Plus className="size-4" />
+        Plan your first trip
       </Link>
     </div>
   );
@@ -72,6 +64,7 @@ function TripCard({
 }) {
   const percentage = total === 0 ? 0 : Math.round((packed / total) * 100);
   const weather = trip.weather_data?.[0];
+  const image = tripImageFor(trip);
   const daysAway = differenceInCalendarDays(
     new Date(trip.departure_date),
     new Date()
@@ -85,9 +78,60 @@ function TripCard({
   return (
     <Link
       href={`/trips/${trip.id}`}
-      className="command-panel group flex min-h-64 flex-col p-5 transition-all duration-200 hover:-translate-y-0.5"
+      className="card-cinematic command-panel group flex min-h-80 flex-col p-0"
     >
-      <div className="flex items-center justify-between gap-2">
+      <div
+        className="relative min-h-36 overflow-hidden border-b border-white/10"
+        aria-label={image.alt}
+        role="img"
+      >
+        {image.src ? (
+          <div
+            className="card-thumb absolute inset-0 transition-transform duration-700 ease-out"
+            style={{
+              backgroundImage: `url(${image.src})`,
+              backgroundPosition: image.focal,
+              backgroundSize: "cover",
+            }}
+          />
+        ) : (
+          <div className="animate-aurora absolute inset-0 bg-gradient-to-br from-teal-900/60 via-emerald-800/40 to-cyan-900/50" />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(5,8,12,0.04), rgba(5,8,12,0.86))",
+          }}
+        />
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between gap-2 p-4">
+          <div className="flex items-center gap-2">
+            <span className="status-chip bg-black/35 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-teal-100 backdrop-blur-md">
+              {trip.trip_type}
+            </span>
+            {shared && (
+              <span className="rounded-full border border-cyan-300/25 bg-black/35 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-cyan-100 backdrop-blur-md">
+                Shared
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {trip.itinerary_approved && (
+              <span className="rounded-full border border-emerald-300/25 bg-black/35 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-100 backdrop-blur-md">
+                Approved
+              </span>
+            )}
+            {countdownLabel && (
+              <span className="rounded-full border border-amber-300/25 bg-black/35 px-3 py-1 text-[11px] font-bold text-amber-100 backdrop-blur-md">
+                {countdownLabel}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+      <div className="hidden items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="status-chip px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-teal-200">
             {trip.trip_type}
@@ -112,7 +156,7 @@ function TripCard({
         </div>
       </div>
 
-      <h3 className="mt-5 text-xl font-black tracking-tight text-white">
+      <h3 className="text-xl font-black tracking-tight text-white">
         {trip.destination}
       </h3>
       <div className="mt-2 flex items-center gap-2 text-sm font-medium text-white/46">
@@ -148,6 +192,7 @@ function TripCard({
             </div>
           )}
         </div>
+      </div>
       </div>
     </Link>
   );
@@ -270,6 +315,9 @@ export default async function DashboardPage() {
     nextTripProgress && nextTripProgress.total > 0
       ? Math.round((nextTripProgress.packed / nextTripProgress.total) * 100)
       : 0;
+  const nextTripImage = tripImageFor(
+    nextTrip ?? { destination: "open road", trip_type: "backpacking" }
+  );
 
   return (
     <div className="animate-fade-in-up space-y-8">
@@ -300,7 +348,16 @@ export default async function DashboardPage() {
         </div>
 
         <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="metric-tile p-4">
+          <div className="metric-tile relative min-h-52 overflow-hidden p-4">
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-55"
+              style={{
+                backgroundImage: `linear-gradient(90deg, rgba(5,8,12,0.92), rgba(5,8,12,0.46)), url(${nextTripImage.src})`,
+                backgroundPosition: nextTripImage.focal,
+                backgroundSize: "cover",
+              }}
+            />
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-lg bg-teal-300/10 text-teal-100">
                 <MapPinned className="size-5" />

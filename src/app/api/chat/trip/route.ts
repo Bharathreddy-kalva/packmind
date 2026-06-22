@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import Groq from "groq-sdk";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { scheduleTripReminders, sendTripCreatedSms } from "@/lib/reminders";
+import { getDestinationImage } from "@/lib/unsplash";
 
 export const maxDuration = 60;
 
@@ -235,6 +236,18 @@ export async function POST(request: Request) {
     );
   } catch (err) {
     console.error("[chat/trip] Failed to send trip-created SMS:", err);
+  }
+
+  try {
+    const image = await getDestinationImage(destination);
+    if (image) {
+      await supabase
+        .from("trips")
+        .update({ image_url: image.url, image_credit: image.credit })
+        .eq("id", trip.id);
+    }
+  } catch (err) {
+    console.error("[chat/trip] Failed to fetch destination image:", err);
   }
 
   return NextResponse.json({
