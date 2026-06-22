@@ -13,15 +13,19 @@ export async function POST(request: NextRequest) {
   }
 
   if (event.type === "user.created") {
-    const { id, phone_numbers, primary_phone_number_id } = event.data;
+    const { id, phone_numbers, primary_phone_number_id, email_addresses, primary_email_address_id } = event.data;
     const primaryPhone = phone_numbers.find(
       (phone) => phone.id === primary_phone_number_id
+    );
+    const primaryEmail = email_addresses.find(
+      (e) => e.id === primary_email_address_id
     );
 
     const supabase = createSupabaseServerClient();
     const { error } = await supabase.from("profiles").insert({
       id,
       phone_number: primaryPhone?.phone_number ?? null,
+      email: primaryEmail?.email_address ?? null,
     });
 
     if (error) {

@@ -34,7 +34,10 @@
       "Bash(sed -i '' 's/btn-gradient flex items-center gap-2 px-6 py-3 text-sm transition-all/btn-gradient flex items-center justify-center gap-2 text-sm transition-all/g' \"src/app/\\(dashboard\\)/trips/new/new-trip-form.tsx\")",
       "Bash(sed -i '' 's/btn-gradient mt-6 inline-flex items-center gap-2 px-6 py-3 text-sm transition-all/btn-gradient mt-6 inline-flex items-center gap-2 text-sm transition-all/g' src/components/GeneratePackingList.tsx)",
       "Bash(lsof -i :3000 -sTCP:LISTEN -n -P)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npx next *)",
+      "Bash(lsof *)",
+      "Bash(xargs kill -9)"
     ]
   }
 }

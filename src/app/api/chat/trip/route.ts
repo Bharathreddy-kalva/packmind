@@ -3,7 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { format } from "date-fns";
 import Groq from "groq-sdk";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { scheduleTripReminders, sendTripCreatedSms } from "@/lib/reminders";
+import { scheduleTripReminders, sendTripCreatedEmail } from "@/lib/reminders";
 import { getDestinationImage } from "@/lib/unsplash";
 
 export const maxDuration = 60;
@@ -227,7 +227,7 @@ export async function POST(request: Request) {
   await scheduleTripReminders(supabase, trip.id, userId, departure_date);
 
   try {
-    await sendTripCreatedSms(
+    await sendTripCreatedEmail(
       supabase,
       userId,
       destination,
@@ -235,7 +235,7 @@ export async function POST(request: Request) {
       return_date
     );
   } catch (err) {
-    console.error("[chat/trip] Failed to send trip-created SMS:", err);
+    console.error("[chat/trip] Failed to send trip-created email:", err);
   }
 
   try {

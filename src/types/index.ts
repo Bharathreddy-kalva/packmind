@@ -1,5 +1,6 @@
 export interface Profile {
   id: string;
+  email: string | null;
   phone_number: string | null;
   travel_style: string | null;
   created_at: string;

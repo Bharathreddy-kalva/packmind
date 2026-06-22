@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { scheduleTripReminders, sendTripCreatedSms } from "@/lib/reminders";
+import { scheduleTripReminders, sendTripCreatedEmail } from "@/lib/reminders";
 import { getDestinationImage } from "@/lib/unsplash";
 
 interface CreateTripBody {
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
   await scheduleTripReminders(supabase, trip.id, userId, departure_date);
 
   try {
-    await sendTripCreatedSms(
+    await sendTripCreatedEmail(
       supabase,
       userId,
       destination,
@@ -86,7 +86,7 @@ export async function POST(request: Request) {
       return_date
     );
   } catch (err) {
-    console.error("[api/trips] Failed to send trip-created SMS:", err);
+    console.error("[api/trips] Failed to send trip-created email:", err);
   }
 
   try {

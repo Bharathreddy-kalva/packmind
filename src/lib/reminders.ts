@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from "@/lib/supabase";
-import { sendSMS, sendWhatsApp } from "@/lib/twilio";
+import { sendEmail } from "@/lib/email";
+import { tripConfirmationEmail, packingReminderEmail } from "@/lib/email-templates";
 import type { Reminder, Trip } from "@/types";
 
 type SupabaseClient = ReturnType<typeof createSupabaseServerClient>;
@@ -7,9 +8,6 @@ type SupabaseClient = ReturnType<typeof createSupabaseServerClient>;
 // Process at most this many due reminders per cron run, so a backlog of
 // old/overdue reminders never floods the user with messages at once.
 const MAX_REMINDERS_PER_RUN = 5;
-
-// WhatsApp sandbox allows ~1 message every 3 seconds — wait between sends.
-const SEND_DELAY_MS = 1500;
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
@@ -84,10 +82,10 @@ export async function scheduleTripReminders(
 }
 
 /**
- * Sends the trip-creation confirmation message via WhatsApp. Never throws —
+ * Sends the trip-creation confirmation email. Never throws —
  * failures are logged so they don't block trip creation.
  */
-export async function sendTripCreatedSms(
+export async function sendTripCreatedEmail(
   supabase: SupabaseClient,
   userId: string,
   destination: string,
@@ -95,20 +93,56 @@ export async function sendTripCreatedSms(
   returnDate: string
 ) {
   try {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("phone_number")
-      .eq("id", userId)
-      .single();
+    const email = await getUserEmail(supabase, userId);
+    if (!email) return;
 
-    const phoneNumber = profile?.phone_number;
-    if (!isValidPhoneNumber(phoneNumber)) return;
+    const { subject, html } = tripConfirmationEmail({
+      destination,
+      departureDate,
+      returnDate,
+    });
 
-    const message = `PackMind: Your trip to ${destination} is created! ${departureDate} to ${returnDate}. We'll send packing reminders starting 3 days before you leave. Reply to this chat anytime to keep reminders active.`;
-
-    await sendWhatsApp(phoneNumber, message);
+    await sendEmail(email, subject, html);
   } catch (err) {
-    console.error("[reminders] Failed to send trip-created WhatsApp message:", err);
+    console.error("[reminders] Failed to send trip-created email:", err);
+  }
+}
+
+/**
+ * Resolves the user's email: checks the profiles table first, then falls back
+ * to Clerk's backend API. Returns null if no email is available.
+ */
+async function getUserEmail(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<string | null> {
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", userId)
+    .single();
+
+  if (profile?.email) return profile.email;
+
+  try {
+    const { createClerkClient } = await import("@clerk/nextjs/server");
+    const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY! });
+    const user = await clerk.users.getUser(userId);
+    const clerkEmail = user.emailAddresses.find(
+      (e) => e.id === user.primaryEmailAddressId
+    )?.emailAddress;
+
+    if (clerkEmail) {
+      await supabase
+        .from("profiles")
+        .update({ email: clerkEmail })
+        .eq("id", userId);
+    }
+
+    return clerkEmail ?? null;
+  } catch (err) {
+    console.error("[reminders] Failed to fetch email from Clerk:", err);
+    return null;
   }
 }
 
@@ -168,44 +202,23 @@ export async function processDueReminders(supabase: SupabaseClient) {
 
         const total = items?.length ?? 0;
         const packed = items?.filter((item) => item.is_packed).length ?? 0;
-        const pct = total > 0 ? Math.round((packed / total) * 100) : 0;
 
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("phone_number")
-          .eq("id", primary.user_id)
-          .single();
+        const email = await getUserEmail(supabase, primary.user_id);
 
-        if (isValidPhoneNumber(profile?.phone_number)) {
-          let message: string;
-          if (pct === 100) {
-            message = `🎉 PackMind: You're 100% packed for ${trip.destination}! ${daysLeft} days to go. Have an amazing trip!`;
-          } else if (daysLeft > 1) {
-            message = `🧳 PackMind: ${daysLeft} days until ${trip.destination}! You're ${pct}% packed (${packed}/${total} items). ${total - packed} items left!`;
-          } else if (daysLeft === 1) {
-            message = `🧳 PackMind: Tomorrow's the day for ${trip.destination}! You're ${pct}% packed (${packed}/${total} items). ${total - packed} items left!`;
-          } else {
-            message = `🧳 PackMind: Today's your departure for ${trip.destination}! You're ${pct}% packed (${packed}/${total} items). ${total - packed} items left!`;
-          }
-
+        if (email) {
           try {
-            const result = await sendWhatsApp(profile.phone_number, message);
+            const { subject, html } = packingReminderEmail({
+              destination: trip.destination,
+              daysLeft,
+              packed,
+              total,
+            });
+            const result = await sendEmail(email, subject, html);
             if (result.success) {
-              console.log(`[reminders] Sent via WhatsApp for trip ${tripId}`);
-              await new Promise((resolve) => setTimeout(resolve, SEND_DELAY_MS));
-            } else if (result.code === 63016) {
-              // Outside the WhatsApp 24h session window — fall back to SMS.
-              console.log(
-                `[reminders] WhatsApp unavailable (63016) for trip ${tripId} — falling back to SMS`
-              );
-              const smsResult = await sendSMS(profile.phone_number, message);
-              if (smsResult.success) {
-                console.log(`[reminders] Sent via SMS fallback for trip ${tripId}`);
-              }
-              await new Promise((resolve) => setTimeout(resolve, SEND_DELAY_MS));
+              console.log(`[reminders] Sent email reminder for trip ${tripId}`);
             }
           } catch (err) {
-            console.error("[reminders] Failed to send reminder message:", err);
+            console.error("[reminders] Failed to send reminder email:", err);
           }
         }
       }
