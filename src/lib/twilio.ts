@@ -1,17 +1,16 @@
 import twilio from "twilio";
 
-const client = twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-
-const WHATSAPP_FROM =
-  process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886";
+function getClient() {
+  return twilio(
+    process.env.TWILIO_ACCOUNT_SID,
+    process.env.TWILIO_AUTH_TOKEN
+  );
+}
 
 export async function sendSMS(to: string, body: string) {
   console.log("[SMS] Attempting send to:", to);
   try {
-    const message = await client.messages.create({
+    const message = await getClient().messages.create({
       body,
       from: process.env.TWILIO_PHONE_NUMBER,
       to,
@@ -27,12 +26,12 @@ export async function sendSMS(to: string, body: string) {
 
 export async function sendWhatsApp(to: string, body: string) {
   console.log("[WhatsApp] Attempting send to:", to);
-  // ensure the "to" has the whatsapp: prefix exactly once
   const formattedTo = to.startsWith("whatsapp:") ? to : `whatsapp:${to}`;
+  const from = process.env.TWILIO_WHATSAPP_FROM || "whatsapp:+14155238886";
   try {
-    const message = await client.messages.create({
+    const message = await getClient().messages.create({
       body,
-      from: WHATSAPP_FROM,
+      from,
       to: formattedTo,
     });
     console.log("[WhatsApp] SUCCESS, SID:", message.sid);
