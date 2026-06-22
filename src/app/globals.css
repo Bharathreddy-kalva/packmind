@@ -186,6 +186,27 @@
   }
 }
 
+@keyframes hero-ken-burns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.08) translate(-1%, -0.5%);
+  }
+}
+
+@keyframes mosaic-drift {
+  0% {
+    transform: translate(0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate(-8px, -6px) scale(1.08);
+  }
+  100% {
+    transform: translate(0, 0) scale(1.05);
+  }
+}
+
 @keyframes float-gentle {
   0%,
   100% {
@@ -237,6 +258,9 @@
   .animate-ken-burns {
     animation: ken-burns 20s ease-in-out infinite alternate;
   }
+  .animate-hero-ken-burns {
+    animation: hero-ken-burns 25s ease-in-out infinite alternate;
+  }
   .animate-float {
     animation: float-gentle 6s ease-in-out infinite;
   }
@@ -246,6 +270,9 @@
   .animate-aurora {
     background-size: 200% 200%;
     animation: aurora-shift 8s ease-in-out infinite;
+  }
+  .animate-mosaic-drift {
+    animation: mosaic-drift 30s ease-in-out infinite;
   }
   .card-cinematic {
     transition:
@@ -401,12 +428,14 @@ html {
 
 @media (prefers-reduced-motion: reduce) {
   .animate-ken-burns,
+  .animate-hero-ken-burns,
   .animate-float,
   .animate-float-alt,
   .animate-aurora,
   .animate-fade-in-up,
   .animate-shimmer,
-  .animate-pulse-glow {
+  .animate-pulse-glow,
+  .animate-mosaic-drift {
     animation: none !important;
   }
   .card-cinematic:hover {
