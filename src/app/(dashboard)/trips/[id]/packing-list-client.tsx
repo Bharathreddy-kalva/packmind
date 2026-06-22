@@ -21,7 +21,7 @@ import {
   PackageOpen,
   Plus,
   Radar,
-  Share2,
+  Rows3,
   Shirt,
   Sparkles,
   type LucideIcon,
@@ -30,6 +30,10 @@ import { cn } from "@/lib/utils";
 import { tripAccent, TRIP_TYPE_ICONS } from "@/lib/trip-style";
 import { WeatherIcon } from "@/components/weather-icon";
 import { TripIntelligence } from "@/components/TripIntelligence";
+import { TripRiskRadar } from "@/components/TripRiskRadar";
+import { ShareTripButton } from "@/components/ShareTripButton";
+import { VisualPackMode } from "@/components/VisualPackMode";
+import type { TripAccessRole } from "@/lib/trip-access";
 import type {
   PackingItem,
   Trip,
@@ -46,6 +50,7 @@ const CATEGORIES: { key: string; label: string; icon: LucideIcon }[] = [
 ];
 
 const DESTINATION_SPECIFIC_PATTERN = /\s*\[(.+)-specific\]$/i;
+type PackView = "visual" | "list";
 
 function parseItemName(name: string): {
   displayName: string;
@@ -64,9 +69,11 @@ function parseItemName(name: string): {
 export function PackingListClient({
   trip,
   initialItems,
+  accessRole,
 }: {
   trip: Trip;
   initialItems: PackingItem[];
+  accessRole: TripAccessRole;
 }) {
   const [items, setItems] = useState(initialItems);
   const [expanded, setExpanded] = useState<Record<string, boolean>>(
@@ -80,6 +87,7 @@ export function PackingListClient({
   const [intelligence, setIntelligence] = useState(trip.trip_intelligence);
   const [isScanning, setIsScanning] = useState(false);
   const [autoAddedCount, setAutoAddedCount] = useState<number | null>(null);
+  const [packView, setPackView] = useState<PackView>("visual");
   const destinationIntel = trip.destination_intel;
   const confettiFiredRef = useRef(false);
 
@@ -231,25 +239,15 @@ export function PackingListClient({
     }
   };
 
-  const handleShare = async () => {
-    const url = `${window.location.origin}/trips/${trip.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      toast.success("Link copied to clipboard!");
-    } catch {
-      toast.error("Failed to copy link.");
-    }
-  };
-
   return (
-    <div className="animate-fade-in-up mx-auto max-w-3xl space-y-6 pb-24 pt-10">
+    <div className="animate-fade-in-up mx-auto max-w-5xl space-y-6 pb-24 pt-8">
       {/* Header */}
-      <div className="glass rounded-2xl p-8">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="command-panel p-6 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-5">
           <div>
             <span
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide",
+                "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.18em]",
                 accent.bg,
                 accent.text
               )}
@@ -257,30 +255,27 @@ export function PackingListClient({
               <HeroIcon className="size-3.5" />
               {trip.trip_type}
             </span>
-            <h1 className="mt-3 text-3xl font-bold tracking-tight text-white">
+            <h1 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl">
               {trip.destination}
             </h1>
-            <div className="mt-2 flex items-center gap-2 text-sm font-medium text-white/40">
+            <div className="mt-3 flex items-center gap-2 text-sm font-bold text-white/46">
               <Calendar className="size-4" />
               {trip.departure_date} – {trip.return_date}
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={handleShare}
-            className="btn-ghost flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all"
-          >
-            <Share2 className="size-4" />
-            Share
-          </button>
+          <ShareTripButton
+            tripId={trip.id}
+            canInvite={accessRole === "owner"}
+          />
         </div>
 
         {weather ? (
-          <div className="mt-6 flex items-center gap-4 rounded-xl bg-white/5 p-4">
+          <div className="mt-7 grid gap-3 sm:grid-cols-[1fr_auto]">
+            <div className="metric-tile flex items-center gap-4 p-4">
             <WeatherIcon
               condition={weather.condition}
-              className="size-8 text-indigo-400"
+              className="size-9 text-teal-200"
             />
             <div>
               <p className="text-lg font-semibold text-white">
@@ -290,14 +285,15 @@ export function PackingListClient({
                 {weather.description}
               </p>
             </div>
+            </div>
             {weather.precipitation_chance > 0 && (
-              <div className="ml-auto text-sm text-white/30">
+              <div className="metric-tile flex min-w-36 items-center justify-center px-4 py-3 text-center text-sm font-bold text-white/55">
                 {weather.precipitation_chance}% chance of rain
               </div>
             )}
           </div>
         ) : (
-          <div className="mt-6 rounded-xl bg-white/5 p-4 text-sm text-white/30">
+          <div className="metric-tile mt-7 p-4 text-sm text-white/38">
             Weather data isn&apos;t available for this trip yet.
           </div>
         )}
@@ -312,7 +308,7 @@ export function PackingListClient({
           </div>
           <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-indigo-500 transition-[width] duration-1000 ease-out"
+              className="signal-line h-full rounded-full transition-[width] duration-1000 ease-out"
               style={{ width: `${displayProgress}%` }}
             />
           </div>
@@ -321,12 +317,21 @@ export function PackingListClient({
 
       {/* Trip Intelligence */}
       {autoAddedCount !== null && autoAddedCount > 0 && (
-        <div className="flex items-center gap-3 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm font-medium text-emerald-400">
+        <div className="flex items-center gap-3 rounded-lg border border-emerald-300/25 bg-emerald-300/10 p-4 text-sm font-bold text-emerald-200">
           <CheckCircle2 className="size-5 shrink-0" />
           {autoAddedCount} item{autoAddedCount === 1 ? "" : "s"} auto-added to
           your packing list based on destination conditions
         </div>
       )}
+
+      <TripRiskRadar
+        tripId={trip.id}
+        initialRadar={trip.risk_radar}
+        onItemsAdded={(addedItems) => {
+          setItems((prev) => [...prev, ...addedItems]);
+          setAutoAddedCount(addedItems.length);
+        }}
+      />
 
       {intelligence ? (
         <TripIntelligence
@@ -337,10 +342,10 @@ export function PackingListClient({
           onRegenerated={setIntelligence}
         />
       ) : (
-        <div className="glass flex flex-wrap items-center justify-between gap-4 rounded-2xl p-4">
+        <div className="command-panel flex flex-wrap items-center justify-between gap-4 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-              <Radar className="size-4 text-orange-400" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-300/10">
+              <Radar className="size-4 text-amber-200" />
             </div>
             <div>
               <p className="font-semibold text-white">
@@ -375,15 +380,15 @@ export function PackingListClient({
 
       {/* Destination Intel */}
       {destinationIntel ? (
-        <div className="glass rounded-2xl">
+        <div className="command-panel">
           <button
             type="button"
             onClick={() => setIntelExpanded((prev) => !prev)}
             className="flex w-full items-center justify-between gap-4 p-4"
           >
             <div className="flex items-center gap-3 text-left">
-              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
-                <MapPin className="size-4 text-amber-400" />
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-300/10">
+                <MapPin className="size-4 text-amber-200" />
               </div>
               <div>
                 <p className="font-semibold text-white">
@@ -472,10 +477,10 @@ export function PackingListClient({
           </div>
         </div>
       ) : (
-        <div className="glass flex flex-wrap items-center justify-between gap-4 rounded-2xl p-4">
+        <div className="command-panel flex flex-wrap items-center justify-between gap-4 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
-              <MapPin className="size-4 text-amber-400" />
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-300/10">
+              <MapPin className="size-4 text-amber-200" />
             </div>
             <div>
               <p className="font-semibold text-white">Know Before You Go</p>
@@ -501,9 +506,48 @@ export function PackingListClient({
         </div>
       )}
 
-      {/* Categories */}
-      <div className="space-y-4">
-        {CATEGORIES.map(({ key, label, icon: Icon }) => {
+      <div className="command-panel flex flex-wrap items-center justify-between gap-3 p-3">
+        <div>
+          <p className="font-semibold text-white">Packing workspace</p>
+          <p className="text-xs text-white/35">
+            Switch between the suitcase view and the detailed checklist.
+          </p>
+        </div>
+        <div className="flex rounded-lg bg-white/5 p-1">
+          <button
+            type="button"
+            onClick={() => setPackView("visual")}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-colors",
+              packView === "visual"
+                ? "bg-teal-200 text-black"
+                : "text-white/45 hover:text-white"
+            )}
+          >
+            <PackageOpen className="size-4" />
+            Suitcase
+          </button>
+          <button
+            type="button"
+            onClick={() => setPackView("list")}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold transition-colors",
+              packView === "list"
+                ? "bg-teal-200 text-black"
+                : "text-white/45 hover:text-white"
+            )}
+          >
+            <Rows3 className="size-4" />
+            Checklist
+          </button>
+        </div>
+      </div>
+
+      {packView === "visual" ? (
+        <VisualPackMode items={items} onTogglePacked={togglePacked} />
+      ) : (
+        <div className="space-y-4">
+          {CATEGORIES.map(({ key, label, icon: Icon }) => {
           const categoryItems = itemsByCategory.get(key) ?? [];
           const isExpanded = expanded[key] ?? true;
           const categoryPacked = categoryItems.filter(
@@ -513,16 +557,16 @@ export function PackingListClient({
           return (
             <div
               key={key}
-              className="glass rounded-2xl"
+              className="command-panel"
             >
               <button
                 type="button"
                 onClick={() => toggleCategory(key)}
                 className="flex w-full items-center justify-between p-4"
               >
-                <div className="flex items-center gap-3">
-                  <div className="flex size-9 items-center justify-center rounded-full bg-indigo-500/10">
-                    <Icon className="size-4 text-indigo-400" />
+                  <div className="flex items-center gap-3">
+                  <div className="flex size-9 items-center justify-center rounded-lg bg-teal-300/10">
+                    <Icon className="size-4 text-teal-200" />
                   </div>
                   <div className="text-left">
                     <p className="font-semibold text-white">{label}</p>
@@ -572,8 +616,8 @@ export function PackingListClient({
                             className={cn(
                               "flex size-5 shrink-0 items-center justify-center rounded-md border-2 transition-all duration-200",
                               item.is_packed
-                                ? "scale-105 border-indigo-500 bg-indigo-500 text-white"
-                                : "border-white/20 bg-transparent hover:border-indigo-400"
+                                ? "scale-105 border-teal-300 bg-teal-300 text-black"
+                                : "border-white/20 bg-transparent hover:border-teal-300"
                             )}
                           >
                             <Check
@@ -624,12 +668,12 @@ export function PackingListClient({
                             }
                           }}
                           placeholder="Item name"
-                          className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                          className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-sm text-white placeholder:text-white/30 focus:border-teal-300 focus:outline-none focus:ring-2 focus:ring-teal-300/20"
                         />
                         <button
                           type="button"
                           onClick={() => addItem(key)}
-                          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-indigo-500"
+                          className="rounded-lg bg-teal-300 px-3 py-1.5 text-sm font-bold text-black transition-colors hover:bg-teal-200"
                         >
                           Add
                         </button>
@@ -659,15 +703,16 @@ export function PackingListClient({
               </div>
             </div>
           );
-        })}
-      </div>
+          })}
+        </div>
+      )}
 
       {/* Unpack mode */}
       <button
         type="button"
         disabled={!tripEnded}
         onClick={() => toast.info("Unpack Mode is coming soon!")}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-4 text-base font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-white/5 disabled:text-white/30"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-teal-300 px-6 py-4 text-base font-black text-black transition-colors hover:bg-teal-200 disabled:cursor-not-allowed disabled:bg-white/5 disabled:text-white/30"
       >
         <PackageOpen className="size-5" />
         {tripEnded

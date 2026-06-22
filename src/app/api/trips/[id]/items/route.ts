@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
+import { getTripAccess } from "@/lib/trip-access";
 
 interface PatchItemBody {
   item_id: string;
@@ -42,6 +43,11 @@ export async function PATCH(
   }
 
   const supabase = createSupabaseServerClient();
+  const accessRole = await getTripAccess(supabase, id, userId);
+
+  if (!accessRole) {
+    return NextResponse.json({ error: "Trip not found." }, { status: 404 });
+  }
 
   const { data, error } = await supabase
     .from("packing_items")
@@ -83,6 +89,11 @@ export async function POST(
   }
 
   const supabase = createSupabaseServerClient();
+  const accessRole = await getTripAccess(supabase, id, userId);
+
+  if (!accessRole) {
+    return NextResponse.json({ error: "Trip not found." }, { status: 404 });
+  }
 
   const { data, error } = await supabase
     .from("packing_items")

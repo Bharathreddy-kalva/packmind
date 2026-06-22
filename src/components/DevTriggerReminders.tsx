@@ -15,6 +15,7 @@ export function DevTriggerReminders() {
       });
       const data = (await response.json()) as {
         processed?: number;
+        riskScans?: number;
         error?: string;
       };
 
@@ -22,7 +23,11 @@ export function DevTriggerReminders() {
         throw new Error(data.error ?? "Failed to trigger reminders.");
       }
 
-      toast.success(`Processed ${data.processed ?? 0} reminder(s).`);
+      toast.success(
+        `Processed ${data.processed ?? 0} reminder(s) and ${
+          data.riskScans ?? 0
+        } radar scan(s).`
+      );
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Failed to trigger reminders."

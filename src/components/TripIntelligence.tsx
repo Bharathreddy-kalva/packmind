@@ -70,24 +70,26 @@ const ACTIVITY_ICONS: Record<string, LucideIcon> = {
 
 const ACTIVITY_COLORS: Record<string, string> = {
   essential: "text-amber-400",
-  food: "text-orange-400",
-  activity: "text-indigo-400",
+  food: "text-amber-300",
+  activity: "text-teal-300",
   travel: "text-slate-400",
-  leisure: "text-purple-400",
+  leisure: "text-fuchsia-300",
   arrival: "text-emerald-400",
 };
 
 const cardStyle: CSSProperties = {
-  background: "rgba(255,255,255,0.03)",
+  background:
+    "linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.024)), rgba(6,10,16,0.5)",
   backdropFilter: "blur(20px)",
   WebkitBackdropFilter: "blur(20px)",
-  border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "20px",
+  border: "1px solid rgba(255,255,255,0.1)",
+  borderRadius: "10px",
   padding: "24px",
+  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.08), 0 24px 70px rgba(0,0,0,0.28)",
 };
 
 const resourceItemClass =
-  "rounded-xl border border-white/[0.06] bg-white/[0.03] p-4";
+  "rounded-lg border border-white/[0.08] bg-white/[0.035] p-4";
 
 function TripIntelligenceContent({
   data,
@@ -172,11 +174,11 @@ function TripIntelligenceContent({
       {/* Resource Warnings */}
       <div style={cardStyle}>
         <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-            <Radar className="size-5 text-orange-400" />
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-300/10">
+            <Radar className="size-5 text-amber-200" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-white">
+            <h2 className="text-lg font-black text-white">
               Pre-Trip Intelligence Report
             </h2>
             <p className="text-sm text-white/50">
@@ -200,7 +202,7 @@ function TripIntelligenceContent({
                 className="rounded-xl bg-white/[0.03] p-4"
               >
                 <div className="flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/5">
+                  <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/5">
                     <Icon className="size-4 text-white/70" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -215,9 +217,9 @@ function TripIntelligenceContent({
                     <p className="mt-1 text-sm text-white/60">
                       {warning.description}
                     </p>
-                    <p className="mt-2 text-sm font-medium text-amber-400">
-                      &rarr; {warning.action}
-                    </p>
+                      <p className="mt-2 text-sm font-bold text-amber-200">
+                        &rarr; {warning.action}
+                      </p>
                   </div>
                 </div>
               </div>

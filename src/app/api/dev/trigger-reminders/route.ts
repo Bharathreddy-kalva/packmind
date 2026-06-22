@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { processDueReminders } from "@/lib/reminders";
+import { processDailyRiskRadarRefresh } from "@/lib/risk-radar";
 
 export async function POST() {
   if (process.env.NODE_ENV === "production") {
@@ -12,6 +13,7 @@ export async function POST() {
 
   const supabase = createSupabaseServerClient();
   const processed = await processDueReminders(supabase);
+  const riskScans = await processDailyRiskRadarRefresh(supabase);
 
-  return NextResponse.json({ processed });
+  return NextResponse.json({ processed, riskScans });
 }

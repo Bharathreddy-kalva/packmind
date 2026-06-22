@@ -1,13 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { createSupabaseServerClient } from "@/lib/supabase";
-import type { PackingItem, Trip } from "@/types";
+import { getTripWithItemsForUser } from "@/lib/trip-access";
 import { GeneratePackingList } from "@/components/GeneratePackingList";
 import { PackingListClient } from "./packing-list-client";
-
-interface TripWithItems extends Trip {
-  packing_items: PackingItem[];
-}
 
 export default async function TripPage({
   params,
@@ -22,23 +18,18 @@ export default async function TripPage({
   }
 
   const supabase = createSupabaseServerClient();
-  const { data: trip } = await supabase
-    .from("trips")
-    .select("*, packing_items(*)")
-    .eq("id", id)
-    .eq("user_id", userId)
-    .single();
+  const result = await getTripWithItemsForUser(supabase, id, userId);
 
-  if (!trip) {
+  if (!result) {
     notFound();
   }
 
-  const tripData = trip as TripWithItems;
+  const { trip: tripData, accessRole } = result;
   const items = [...tripData.packing_items].sort((a, b) =>
     a.name.localeCompare(b.name)
   );
 
-  if (items.length === 0 && tripData.status === "planning") {
+  if (items.length === 0 && tripData.status === "planning" && accessRole === "owner") {
     return (
       <GeneratePackingList
         tripId={tripData.id}
@@ -49,5 +40,11 @@ export default async function TripPage({
     );
   }
 
-  return <PackingListClient trip={tripData} initialItems={items} />;
+  return (
+    <PackingListClient
+      trip={tripData}
+      initialItems={items}
+      accessRole={accessRole}
+    />
+  );
 }

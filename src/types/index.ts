@@ -129,6 +129,48 @@ export interface TripIntelligence {
   autoAddItems: AutoAddItem[];
 }
 
+export interface TripRiskAlert {
+  type:
+    | "weather"
+    | "strike"
+    | "visa"
+    | "health"
+    | "airport"
+    | "closure"
+    | "packing"
+    | string;
+  severity: "high" | "medium" | "low";
+  title: string;
+  description: string;
+  impact: string;
+  action: string;
+}
+
+export interface WeatherChange {
+  changed: boolean;
+  summary: string;
+  previous?: WeatherDataPoint | null;
+  latest?: WeatherDataPoint | null;
+}
+
+export interface PackingImpact {
+  itemName: string;
+  category: string;
+  reason: string;
+  bag: "carry-on" | "checked" | "either" | string;
+}
+
+export interface TripRiskRadar {
+  riskLevel: "high" | "medium" | "low";
+  headline: string;
+  summary: string;
+  lastScannedAt: string;
+  nextScanReason: string;
+  weatherChange: WeatherChange;
+  alerts: TripRiskAlert[];
+  packingImpacts: PackingImpact[];
+}
+
 export interface Trip {
   id: string;
   user_id: string;
@@ -140,6 +182,8 @@ export interface Trip {
   weather_data: WeatherDataPoint[] | null;
   destination_intel: DestinationIntel | null;
   trip_intelligence: TripIntelligence | null;
+  risk_radar: TripRiskRadar | null;
+  risk_radar_refreshed_at: string | null;
   status: string;
   itinerary_approved: boolean;
   created_at: string;

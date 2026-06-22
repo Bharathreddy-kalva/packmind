@@ -3,11 +3,15 @@ import { currentUser } from "@clerk/nextjs/server";
 import { differenceInCalendarDays } from "date-fns";
 import {
   Brain,
+  CalendarDays,
   CheckCircle2,
   Flame,
   Gauge,
+  MapPinned,
   Plane,
   Plus,
+  Radar,
+  Route,
 } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase";
 import { WeatherIcon } from "@/components/weather-icon";
@@ -42,12 +46,12 @@ function EmptyIllustration() {
 
 function EmptyTripsState({ message }: { message: string }) {
   return (
-    <div className="glass flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-16 text-center">
+    <div className="command-panel flex flex-col items-center justify-center gap-3 px-6 py-16 text-center">
       <EmptyIllustration />
-      <p className="font-semibold text-white/30">{message}</p>
+      <p className="font-semibold text-white/45">{message}</p>
       <Link
         href="/trips/new"
-        className="mt-1 text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300"
+        className="mt-1 text-sm font-bold text-teal-200 transition-colors hover:text-teal-100"
       >
         Plan a trip &rarr;
       </Link>
@@ -59,10 +63,12 @@ function TripCard({
   trip,
   packed,
   total,
+  shared,
 }: {
   trip: Trip;
   packed: number;
   total: number;
+  shared?: boolean;
 }) {
   const percentage = total === 0 ? 0 : Math.round((packed / total) * 100);
   const weather = trip.weather_data?.[0];
@@ -79,55 +85,69 @@ function TripCard({
   return (
     <Link
       href={`/trips/${trip.id}`}
-      className="glass-hover group flex flex-col rounded-2xl border border-white/[0.06] bg-white/[0.04] p-6 backdrop-blur-[20px] transition-all duration-200 hover:scale-[1.01]"
+      className="command-panel group flex min-h-64 flex-col p-5 transition-all duration-200 hover:-translate-y-0.5"
     >
       <div className="flex items-center justify-between gap-2">
-        <span className="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold capitalize text-white/60">
-          {trip.trip_type}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="status-chip px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-teal-200">
+            {trip.trip_type}
+          </span>
+          {shared && (
+            <span className="rounded-full border border-cyan-300/25 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-cyan-200">
+              Shared
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
           {trip.itinerary_approved && (
-            <span className="rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-400">
+            <span className="rounded-full border border-emerald-300/25 bg-emerald-300/10 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-200">
               Approved
             </span>
           )}
           {countdownLabel && (
-            <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-400">
+            <span className="rounded-full border border-amber-300/20 bg-amber-300/10 px-3 py-1 text-[11px] font-bold text-amber-200">
               {countdownLabel}
             </span>
           )}
         </div>
       </div>
 
-      <h3 className="mt-4 text-lg font-semibold tracking-tight text-white">
+      <h3 className="mt-5 text-xl font-black tracking-tight text-white">
         {trip.destination}
       </h3>
-      <p className="mt-1 text-sm text-white/40">
+      <div className="mt-2 flex items-center gap-2 text-sm font-medium text-white/46">
+        <CalendarDays className="size-4 text-teal-200/70" />
         {trip.departure_date} – {trip.return_date}
-      </p>
+      </div>
 
-      <div className="mt-5 flex items-center justify-between">
+      <div className="mt-auto pt-7">
         <div className="flex-1">
           <div className="flex items-center justify-between text-xs font-medium text-white/40">
-            <span>Packed</span>
+            <span className="uppercase tracking-[0.18em]">Packed</span>
             <span className="text-white/60">{percentage}%</span>
           </div>
-          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-white/10">
+          <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
             <div
-              className="h-full rounded-full bg-indigo-500 transition-[width] duration-700 ease-out"
+              className="signal-line h-full rounded-full transition-[width] duration-700 ease-out"
               style={{ width: `${percentage}%` }}
             />
           </div>
         </div>
-        {weather && (
-          <div className="ml-4 flex items-center gap-1.5 text-sm font-medium text-white/60">
-            <WeatherIcon
-              condition={weather.condition}
-              className="size-4 text-indigo-400"
-            />
-            {Math.round(weather.temp_max)}°C
+        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+          <div className="flex items-center gap-2 text-xs text-white/45">
+            <Route className="size-4 text-amber-200/70" />
+            {total} items
           </div>
-        )}
+          {weather && (
+            <div className="flex items-center gap-1.5 text-sm font-bold text-white/70">
+              <WeatherIcon
+                condition={weather.condition}
+                className="size-4 text-teal-200"
+              />
+              {Math.round(weather.temp_max)}°C
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   );
@@ -148,7 +168,30 @@ export default async function DashboardPage() {
     .eq("user_id", user?.id ?? "")
     .order("departure_date", { ascending: true });
 
-  const trips = (data ?? []) as Trip[];
+  const { data: collaboratorRows } = user?.id
+    ? await supabase
+        .from("trip_collaborators")
+        .select("trips(*)")
+        .eq("user_id", user.id)
+    : { data: [] };
+
+  const ownedTrips = (data ?? []) as Trip[];
+  const sharedTrips = (
+    (collaboratorRows ?? []) as unknown as {
+      trips: Trip | Trip[] | null;
+    }[]
+  )
+    .map((row) => (Array.isArray(row.trips) ? row.trips[0] : row.trips))
+    .filter((trip): trip is Trip => Boolean(trip));
+
+  const sharedTripIds = new Set(sharedTrips.map((trip) => trip.id));
+  const trips = [...ownedTrips];
+  for (const trip of sharedTrips) {
+    if (!trips.some((existing) => existing.id === trip.id)) {
+      trips.push(trip);
+    }
+  }
+  trips.sort((a, b) => a.departure_date.localeCompare(b.departure_date));
   const tripIds = trips.map((trip) => trip.id);
 
   const { data: itemsData } =
@@ -219,50 +262,96 @@ export default async function DashboardPage() {
       icon: Flame,
     },
   ];
+  const nextTrip = activeTrips[0];
+  const nextTripProgress = nextTrip
+    ? progressByTrip.get(nextTrip.id) ?? { packed: 0, total: 0 }
+    : null;
+  const nextTripPercentage =
+    nextTripProgress && nextTripProgress.total > 0
+      ? Math.round((nextTripProgress.packed / nextTripProgress.total) * 100)
+      : 0;
 
   return (
-    <div className="animate-fade-in-up space-y-10">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            {greeting}, {firstName}
-          </h1>
-          <p className="mt-2 text-white/40">
-            Here&apos;s an overview of your trips and packing progress.
-          </p>
-        </div>
-        {process.env.NODE_ENV !== "production" && <DevTriggerReminders />}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="glass glass-hover rounded-2xl p-6"
-          >
-            <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-500/10">
-              <stat.icon className="size-5 text-indigo-400" />
+    <div className="animate-fade-in-up space-y-8">
+      <section className="command-panel p-6 sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-teal-300/20 bg-teal-300/10 px-3 py-1 text-xs font-black uppercase tracking-[0.22em] text-teal-100">
+              <Radar className="size-3.5" />
+              Travel command center
             </div>
-            <p className="mt-4 text-3xl font-bold tracking-tight text-white">
-              {stat.value}
+            <h1 className="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl">
+              {greeting}, {firstName}
+            </h1>
+            <p className="mt-3 max-w-xl text-base font-medium text-white/48">
+              Live packing readiness, shared trips, and destination intelligence in one board.
             </p>
-            <p className="mt-1 text-sm text-white/40">{stat.label}</p>
           </div>
-        ))}
-      </div>
+          <div className="flex flex-col items-end gap-3">
+            {process.env.NODE_ENV !== "production" && <DevTriggerReminders />}
+            <Link
+              href="/trips/new"
+              className="btn-gradient flex items-center gap-2 text-sm transition-all"
+            >
+              <Plus className="size-4" />
+              Plan New Trip
+            </Link>
+          </div>
+        </div>
+
+        <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="metric-tile p-4">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-teal-300/10 text-teal-100">
+                <MapPinned className="size-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-white/36">
+                  Next departure
+                </p>
+                <p className="mt-1 text-xl font-black text-white">
+                  {nextTrip ? nextTrip.destination : "No active trip"}
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="signal-line h-full rounded-full"
+                style={{ width: `${nextTripPercentage}%` }}
+              />
+            </div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-sm text-white/48">
+              <span>
+                {nextTripProgress
+                  ? `${nextTripProgress.packed} of ${nextTripProgress.total} packed`
+                  : "Ready when your next trip lands"}
+              </span>
+              {nextTrip && <span>{nextTrip.departure_date}</span>}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {stats.map((stat) => (
+              <div key={stat.label} className="metric-tile p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/36">
+                    {stat.label}
+                  </p>
+                  <stat.icon className="size-4 text-amber-200/80" />
+                </div>
+                <p className="mt-4 text-3xl font-black tracking-tight text-white">
+                  {stat.value}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <section>
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold tracking-tight text-white">
+          <h2 className="text-xl font-black tracking-tight text-white">
             Active Trips
           </h2>
-          <Link
-            href="/trips/new"
-            className="btn-gradient flex items-center gap-1.5 text-sm transition-all"
-          >
-            <Plus className="size-4" />
-            Plan New Trip
-          </Link>
         </div>
         <div className="mt-4">
           {activeTrips.length === 0 ? (
@@ -280,6 +369,7 @@ export default async function DashboardPage() {
                     trip={trip}
                     packed={progress.packed}
                     total={progress.total}
+                    shared={sharedTripIds.has(trip.id)}
                   />
                 );
               })}
@@ -289,7 +379,7 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-xl font-bold tracking-tight text-white">
+        <h2 className="text-xl font-black tracking-tight text-white">
           Past Trips
         </h2>
         <div className="mt-4">
@@ -308,6 +398,7 @@ export default async function DashboardPage() {
                     trip={trip}
                     packed={progress.packed}
                     total={progress.total}
+                    shared={sharedTripIds.has(trip.id)}
                   />
                 );
               })}
@@ -316,12 +407,12 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <div className="glass rounded-2xl p-8">
+      <div className="command-panel p-6">
         <div className="flex items-center gap-3">
-          <div className="flex size-10 items-center justify-center rounded-xl bg-indigo-500/10">
-            <Brain className="size-5 text-indigo-400" />
+          <div className="flex size-10 items-center justify-center rounded-lg bg-teal-300/10">
+            <Brain className="size-5 text-teal-200" />
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-white">
+          <h2 className="text-xl font-black tracking-tight text-white">
             Your Packing DNA
           </h2>
         </div>

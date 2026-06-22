@@ -2,39 +2,51 @@ const NOISE_TEXTURE =
   "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E\")";
 
 export function AtmosphericBackground({ intense = false }: { intense?: boolean } = {}) {
-  const a = intense ? 0.1 : 0;
+  const a = intense ? 0.08 : 0;
   return (
     <>
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0 -z-10"
         style={{
-          backgroundColor: "#0f0814",
+          backgroundColor: "#05080c",
           backgroundImage: `
-            radial-gradient(ellipse 120% 60% at 50% 0%,
-              rgba(60, 10, 120, ${0.8 + a}) 0%,
-              rgba(40, 5, 80, ${0.4 + a}) 40%,
-              transparent 70%),
-            radial-gradient(ellipse 80% 50% at 50% 50%,
-              rgba(80, 20, 140, ${0.3 + a}) 0%,
-              transparent 60%),
-            radial-gradient(ellipse 100% 60% at 50% 100%,
-              rgba(160, 60, 10, ${0.7 + a}) 0%,
-              rgba(120, 40, 5, ${0.5 + a}) 20%,
-              rgba(80, 20, 0, ${0.3 + a}) 45%,
-              transparent 70%),
-            radial-gradient(ellipse 60% 40% at 20% 80%,
-              rgba(140, 50, 10, ${0.3 + a}) 0%,
-              transparent 50%),
-            radial-gradient(ellipse 60% 40% at 80% 80%,
-              rgba(140, 50, 10, ${0.3 + a}) 0%,
-              transparent 50%)
+            linear-gradient(120deg,
+              rgba(18, 32, 43, ${0.95 + a}) 0%,
+              rgba(5, 8, 12, 0.92) 38%,
+              rgba(26, 20, 38, ${0.76 + a}) 72%,
+              rgba(32, 20, 14, ${0.42 + a}) 100%),
+            linear-gradient(180deg,
+              rgba(0, 229, 191, 0.09) 0%,
+              transparent 28%,
+              rgba(255, 184, 77, 0.08) 100%),
+            repeating-linear-gradient(90deg,
+              rgba(255,255,255,0.035) 0,
+              rgba(255,255,255,0.035) 1px,
+              transparent 1px,
+              transparent 72px),
+            repeating-linear-gradient(0deg,
+              rgba(255,255,255,0.025) 0,
+              rgba(255,255,255,0.025) 1px,
+              transparent 1px,
+              transparent 72px)
           `,
         }}
       />
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.015]"
+        className="pointer-events-none fixed inset-0 -z-10 opacity-60"
+        style={{
+          backgroundImage: `
+            linear-gradient(115deg, transparent 0 42%, rgba(0,229,191,0.16) 42.1%, transparent 42.45%),
+            linear-gradient(115deg, transparent 0 56%, rgba(255,184,77,0.13) 56.1%, transparent 56.38%),
+            linear-gradient(65deg, transparent 0 64%, rgba(125,211,252,0.09) 64.1%, transparent 64.36%)
+          `,
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.018]"
         style={{
           backgroundImage: NOISE_TEXTURE,
           backgroundRepeat: "repeat",
